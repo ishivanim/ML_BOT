@@ -1,4 +1,8 @@
 # 📘 RAG Chatbot: Machine Learning Knowledge Assistant
+## 📷 Preview
+
+![Machnie learning bot Preview](bot.png)
+
 ## Overview
 
     This project contains a Retrieval-Augmented Generation (RAG) chatbot built using LangChain, HuggingFace embeddings, ChromaDB, Ollama, and Streamlit. It allows users to ask machine-learning-related questions, and the chatbot responds using information extracted from a custom .md dataset.
