@@ -1,0 +1,9 @@
+regex
+string
+MarkdownTextSplitter
+HuggingFaceEmbeddings
+Chroma
+RetrievalQA
+ChatOllama
+ChatPromptTemplate
+streamlit
