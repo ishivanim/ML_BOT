@@ -1,7 +1,7 @@
 # 📘 RAG Chatbot: Machine Learning Knowledge Assistant
 ## 📷 Preview
 
-![Machnie learning bot Preview](BOT.png)
+![Machnie learning bot Preview](AIML_BOT.png)
 
 ## Overview
 
