@@ -2,8 +2,10 @@ regex
 string
 MarkdownTextSplitter
 HuggingFaceEmbeddings
+Langchain
 Chroma
 RetrievalQA
 ChatOllama
 ChatPromptTemplate
 streamlit
+Joblib
