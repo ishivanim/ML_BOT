@@ -1406,3 +1406,789 @@ ridge = Ridge(alpha=1.0)
 lasso = Lasso(alpha=0.1)
 elastic = ElasticNet(alpha=0.1, l1_ratio=0.5)
 ```
+
+====================
+UNSUPERVISED LEARNING
+====================
+
+Overview of Unsupervised Learning
+------------------------------------
+Unsupervised Learning deals with unlabeled data. The goal is to find hidden patterns, structures, or groupings in the data. Unlike supervised learning, there is no target variable.
+
+Common tasks:
+- Clustering: Grouping similar data points.
+- Dimensionality Reduction: Reducing feature space while retaining important information.
+- Anomaly Detection: Identifying unusual or rare events.
+
+Workflow:
+1. Data preprocessing
+2. Model selection
+3. Training on unlabeled data
+4. Evaluating clusters or latent structure
+
+![Graph: Unsupervised learning workflow](unsupervised_learning.webp)
+
+Different tasks done in unsupervised learning:
+
+1. Clustering
+Clustering is a technique that groups similar data points together into clusters based on their characteristics, without using any labeled data. The objective is to ensure that data points within the same cluster are more similar to each other than to those in different clusters, enabling the discovery of natural groupings and hidden patterns in complex datasets.
+
+### Different types of Clustering###
+1. Types of Clustering
+
+Let's see the types of clustering,
+
+1. Hard Clustering: In hard clustering, each data point strictly belongs to exactly one cluster, no overlap is allowed. This approach assigns a clear membership, making it easier to interpret and use for definitive segmentation tasks.
+
+    Example: If clustering customer data into 2 segments, each customer belongs fully to either Cluster 1 or Cluster 2 without partial memberships.
+    Use cases: Market segmentation, customer grouping, document clustering.
+    Limitations: Cannot represent ambiguity or overlap between groups; boundaries are crisp.
+
+2. Soft Clustering: Soft clustering assigns each data point a probability or degree of membership to multiple clusters simultaneously, allowing data points to partially belong to several groups.
+
+    Example: A data point may have a 70% membership in Cluster 1 and 30% in Cluster 2, reflecting uncertainty or overlap in group characteristics.
+    Use cases: Situations with overlapping class boundaries, fuzzy categories like customer personas or medical diagnosis.
+    Benefits: Captures ambiguity in data, models gradual transitions between clusters.
+
+### Different types of Clustering Methods ###
+1. Centroid-based Clustering (Partitioning Methods)
+---------------------
+
+**Introduction**
+Centroid-based clustering organizes data points around central prototypes called centroids, where each cluster is represented by the mean (or medoid) of its members. The number of clusters is specified in advance and the algorithm allocates points to the nearest centroid, making this technique efficient for spherical and similarly sized clusters but sensitive to outliers and initialization.
+
+**Algorithms**
+There are two types of algorithms used for this kind of clustering method;
+1. K-mean clustering : 
+    K-Means is a centroid-based clustering algorithm that partitions n observations into k clusters in which each observation belongs to the cluster with the nearest mean.
+
+    **Algorithm**
+    1. Choose number of clusters k.
+    2. Initialize k centroids randomly.
+    3. Assign each point to nearest centroid.
+    4. Update centroids as mean of assigned points.
+    5. Repeat steps 3-4 until convergence.
+
+    **Mathematical Formulation**
+    Minimize within-cluster sum of squares (WCSS):
+        J = Σ Σ ||x_i - μ_j||^2
+    where μ_j is the centroid of cluster j.
+
+    **Python Implementation**
+    ```python
+    from sklearn.cluster import KMeans
+    model = KMeans(n_clusters=3, random_state=42)
+    model.fit(X)
+    y_pred = model.labels_
+    ```
+    **Advantages**
+        - Easy to understand and implement: K-means is a straightforward algorithm that is simple to grasp and code, especially with pre-built libraries.
+        - Interpretability: It is easy to interpret the results of k-means clustering
+
+    **Disadvantages**
+        - Choosing the Right Number of Clusters (kk): One of the biggest challenges is deciding how many clusters to use.
+        - Sensitive to Initial Centroids: The final clusters can vary depending on the initial random placement of centroids.
+        - Non-Spherical Clusters: K-Means assumes that the clusters are spherical and equally sized. This can be a problem when the actual clusters in the data are of different shapes or densities.
+        - Outliers: K-Means is sensitive to outliers, which can distort the centroid and, ultimately, the clusters.
+
+2. K-Medoids clustering : 
+    K-Medoids, also known as Partitioning Around Medoids (PAM), is a clustering algorithm introduced by Kaufman and Rousseeuw. It is similar to K-Means, but instead of using the mean of points as a cluster center, it uses an actual data point called a medoid.
+
+    Medoids - A medoid is the most centrally located data point within a cluster. It minimizes the total dissimilarity with all other points in that cluster. The dissimilarity between a medoid Ci and an object Pi​ is given by: E=∣Pi−Ci∣
+
+    The total cost (or objective function) of K-Medoids is defined as:
+    $$c = \frac{\sum C_i}{\sum_{P_i \in C_i} |P_i - C_i|}$$
+
+    **Algorithm**
+    1. Randomly select k data points from the dataset as initial medoids.
+    2. Assign each data point to the nearest medoid using a distance metric (e.g., Manhattan or Euclidean).
+    3. For each medoid m, try swapping it with a non-medoid point ooo.
+        - Recalculate the cost for this new configuration.
+        - If the total cost decreases, accept the swap; otherwise, revert.
+    4. Continue until no further cost reduction is possible.
+
+    **Python Implementation**
+    ```python
+    from sklearn_extra.cluster import KMedoids
+    from sklearn.datasets import make_blobs
+    model = KMedoids(n_clusters=3, random_state=42)
+    model.fit(X)
+    y_pred = model.labels_
+    ```
+    **Advantages**
+        - It is simple to understand and easy to implement.
+        - K-Medoids converges in a fixed number of steps.
+        - It is less sensitive to outliers compared to other partitioning algorithms.
+
+    **Disadvantages**
+        - Not suitable for non-spherical or arbitrarily shaped clusters.
+        - Results may differ across runs due to random initialization of medoids.
+
+2. Hierarchical Clustering
+---------------------------
+**Introduction**
+Hierarchical Clustering is an unsupervised learning method used to group similar data points into clusters based on their distance or similarity. Instead of choosing the number of clusters in advance, it builds a tree-like structure called a dendrogram that shows how clusters merge or split at different levels. It helps identify natural groupings in data and is commonly used in pattern recognition, customer segmentation, gene analysis and image grouping.
+
+**Types of Hierarchical Clustering**
+There are two main types of hierarchical clustering.
+
+1. Agglomerative (Bottom-top) Approach : 
+    It is also known as the bottom-up approach or hierarchical agglomerative clustering (HAC). Bottom-up algorithms treat each data as a singleton cluster at the outset and then successively agglomerate pairs of clusters until all clusters have been merged into a single cluster that contains all data.
+
+**Algorithm (Agglomerative)**
+1. Start with individual points: Each data point is its own cluster. For example if we have 5 data points we start with 5 clusters each containing just one data point.
+2. Calculate distances between clusters: Calculate the distance between every pair of clusters. Initially since each cluster has one point this is the distance between the two data points.
+3. Merge the closest clusters: Identify the two clusters with the smallest distance and merge them into a single cluster.
+4. Update distance matrix: After merging we now have one less cluster. Recalculate the distances between the new cluster and the remaining clusters.
+5. Repeat steps 3 and 4: Keep merging the closest clusters and updating the distance matrix until we have only one cluster left.
+6. Create a dendrogram: As the process continues we can visualize the merging of clusters using a tree-like diagram called a dendrogram. It shows the hierarchy of how clusters are merged.
+
+![ Agglomerative Approach](agglomerative.png)
+
+**Linkage Criteria**
+Key part of this process is linkage which calculates the distance between clusters before they are merged or divided. Different types of linkage is used measure this distance differently.
+
+1. Single Linkage
+
+For two clusters R and S the single linkage returns the minimum distance between two points. This method creates long, chain-like clusters because it is sensitive to outliers and can connect clusters based on a very small number of close points.
+
+$$L(R, S) = \min\bigl(D(i, j)\bigr),\; i \in R,\; j \in S$$
+where
+D(i, j): Distance function between points i and j.
+
+![Single Linkage](Single-Linkage.jpg)
+
+2. Complete Linkage
+
+For two clusters R and S the complete linkage returns the maximum distance between two points. It tends to create compact and spherical clusters because it is more sensitive to outliers and tries to make sure that the clusters are not too far.
+
+$$L(R, S) = \max\bigl(D(i, j)\bigr),\; i \in R,\; j \in S$$
+
+![Complete Linkage](complete-Linkage.jpg)
+
+3. Average Linkage
+
+It returns the average distance between all pairs of points from two clusters. This method maintain a balance between single and complete linkage by considering all pairs of points not just the closest or farthest point. It usually results in clusters that are moderately compact.
+
+$$L(R, S) = \frac{1}{n_R \times n_S} \sum_{i=1}^{n_R} \sum_{j=1}^{n_S} D(i, j),\; i \in R,\; j \in S$$
+where
+n_R​ : Number of data-points in R
+n_S​ : Number of data-points in S
+
+![Average Linkage](average.png)
+
+4. Ward's Linkage
+
+It calculates the distance between two clusters by looking at total spread or variance increase when the clusters are combined. This method creates compact, well-separated clusters by making sure that data within each cluster is as similar as possible.
+
+$$L(R, S) = {n_R + n_S}\frac{n_R \times n_S}
+\sum_{i=1}^{n_R} \sum_{j=1}^{n_S} D(i, j),\; i \in R,\; j \in S
+$$
+where
+nR​​ and nS​ are the sizes of clusters R and S
+D(i, j) is the distance between points i∈R and j∈S.
+
+![Ward's Linkage](ward-Linkage.jpg)
+
+5. Centroid Linkage
+
+It calculates the distance between two clusters based on the distance between their central points i.e the average of all points in the cluster. This method works well when clusters are round or evenly shaped but it may not be the best for irregularly shaped clusters.
+
+$$L(R, S) = D(\overline{R}, \overline{S})$$
+
+where
+$$\overline{R}$$ and $$\overline{S}$$ are the centroids (mean points) of clusters R and S
+$$D(\overline{R},\overline{S})$$ is the distance between the centroids of clusters R and S.
+
+![Centroid Linkage](Centroid-Linkage.jpg)
+
+**Python Implementation**
+```python
+from sklearn.cluster import AgglomerativeClustering
+model = AgglomerativeClustering(n_clusters=3, linkage='ward')
+y_pred = model.fit_predict(X)
+```
+
+
+
+3. DBSCAN (Density-Based Spatial Clustering)
+-------------------------------------------
+**Introduction**
+DBSCAN is a density-based clustering algorithm that groups data points that are closely packed together and marks outliers as noise based on their density in the feature space. It identifies clusters as dense regions in the data space separated by areas of lower density. Unlike K-Means or hierarchical clustering which assumes clusters are compact and spherical, DBSCAN perform well in handling real-world data irregularities such as:
+
+    - Arbitrary-Shaped Clusters: Clusters can take any shape not just circular or convex.
+    - Noise and Outliers: It effectively identifies and handles noise points without assigning them to any cluster.
+
+**Parameters**
+- eps: This defines the radius of the neighborhood around a data point. If the distance between two points is less than or equal to eps they are considered neighbors. A common method to determine eps is by analyzing the k-distance graph. Choosing the right eps is important:
+
+    - If eps is too small most points will be classified as noise.
+    - If eps is too large clusters may merge and the algorithm may fail to distinguish between them.
+
+- MinPts: This is the minimum number of points required within the eps radius to form a dense region. A general rule of thumb is to set MinPts >= D+1 where D is the number of dimensions in the dataset.
+
+    - For most cases a minimum value of MinPts = 3 is recommended.
+
+**Algorithm**
+1. Identify Core Points: For each point in the dataset count the number of points within its eps neighborhood. If the count meets or exceeds MinPts mark the point as a core point.
+2. Form Clusters: For each core point that is not already assigned to a cluster create a new cluster. Recursively find all density-connected points i.e points within the eps radius of the core point and add them to the cluster.
+3. Density Connectivity: Two points a and b are density-connected if there exists a chain of points where each point is within the eps radius of the next and at least one point in the chain is a core point. This chaining process ensures that all points in a cluster are connected through a series of dense regions.
+4. Label Noise Points: After processing all points any point that does not belong to a cluster is labeled as noise.
+
+**Python Implementation**
+```python
+from sklearn.cluster import DBSCAN
+model = DBSCAN(eps=0.5, min_samples=5) #min_samples = MinPts here
+y_pred = model.fit_predict(X)
+```
+
+2. Dimensionality Reduction :
+When working with machine learning models, datasets with too many features can cause issues like slow computation and overfitting. Dimensionality reduction helps to reduce the number of features while retaining key information. It converts high-dimensional data into a lower-dimensional space while preserving important details.
+For example, when you are building a model to predict house prices with features like bedrooms, square footage and location. If you add too many features such as room condition or flooring type, the dataset becomes large and complex.
+
+How Dimensionality Reduction Works?
+
+Lets understand how dimensionality Reduction is used with the help of example. Imagine a dataset where each data point exists in a 3D space defined by axes X, Y and Z. If most of the data variance occurs along X and Y then the Z-dimension may contribute very little to understanding the structure of the data.
+
+![Dimensions](dimension.webp)
+
+Before Reduction we can see that data exist in 3D (X,Y,Z). It has high redundancy and Z contributes little meaningful information
+On the right after reducing the dimensionality the data is represented in lower-dimensional spaces. The top plot (X-Y) maintains the meaningful structure while the bottom plot (Z-Y) shows that the Z-dimension contributed little useful information. 
+
+This process makes data analysis more efficient hence improving computation speed and visualization while minimizing redundancy
+
+**Dimensionality Reduction techniqies can be broadly devided into two main categories:
+
+1. Feature Selection
+
+Feature selection chooses the most relevant features from the dataset without altering them. It helps remove redundant or irrelevant features, improving model efficiency. Some common methods are:
+
+    - Filter methods rank the features based on their relevance to the target variable.
+    - Wrapper methods use the model performance as the criteria for selecting features.
+    - Embedded methods combine feature selection with the model training process.
+
+2. Feature Extraction
+
+Feature extraction involves creating new features by combining or transforming the original features. These new features retain most of the dataset’s important information in fewer dimensions. Common feature extraction methods are:
+
+1. Principal Component Analysis (PCA)
+-------------------------------------
+**Introduction**
+PCA (Principal Component Analysis) is a dimensionality reduction technique and helps us to reduce the number of features in a dataset while keeping the most important information. It changes complex datasets by transforming correlated features into a smaller set of uncorrelated components.
+
+**Working**
+PCA uses linear algebra to transform data into new features called principal components. It finds these by calculating eigenvectors (directions) and eigenvalues (importance) from the covariance matrix. PCA selects the top components with the highest eigenvalues and projects the data onto them simplify the dataset.
+
+Step 1: Standardize the Data
+Different features may have different units and scales like salary vs. age. To compare them fairly PCA first standardizes the data by making each feature have:
+
+A mean of 0
+A standard deviation of 1
+
+$$Z = \frac{X - \mu}{\sigma}$$
+where:
+μ is the mean of independent features  μ={μ1,μ2,⋯ ,μm}.
+σ is the standard deviation of independent features  σ={σ1,σ2,⋯ ,σm}.
+
+Step 2: Calculate Covariance Matrix
+
+Next PCA calculates the covariance matrix to see how features relate to each other whether they increase or decrease together. The covariance between two features x1x1​ and x2x2​ is:
+
+$$\operatorname{cov}(x_1, x_2)
+= \frac{1}{n - 1} \sum_{i=1}^{n} (x_{1i} - \bar{x}_1)(x_{2i} - \bar{x}_2)
+$$
+
+Where:
+\bar{x}_1 and \bar{x}_2​ are the mean values of features x1 and x2.
+n is the number of data points.
+
+The value of covariance can be positive, negative or zeros.
+
+Step 3: Find the Principal Components
+
+PCA identifies new axes where the data spreads out the most:
+
+    - 1st Principal Component (PC1): The direction of maximum variance (most spread).
+    - 2nd Principal Component (PC2): The next best direction, perpendicular to PC1 and so on.
+
+These directions come from the eigenvectors of the covariance matrix and their importance is measured by eigenvalues. For a square matrix A an eigenvector X (a non-zero vector) and its corresponding eigenvalue λ satisfy:
+
+    AX=λX
+
+This means:
+When A acts on X it only stretches or shrinks X by the scalar λ.
+The direction of X remains unchanged hence eigenvectors define "stable directions" of A.
+
+Eigenvalues help rank these directions by importance.
+
+Step 4: Pick the Top Directions & Transform Data
+
+After calculating the eigenvalues and eigenvectors PCA ranks them by the amount of information they capture. We then:
+
+    - Select the top k components that capture most of the variance like 95%.
+    - Transform the original dataset by projecting it onto these top components.
+
+This means we reduce the number of features (dimensions) while keeping the important patterns in the data.
+
+**Python Implementation**
+```python
+from sklearn.decomposition import PCA
+pca = PCA(n_components=2)
+X_reduced = pca.fit_transform(X)
+```
+**Advantages**
+
+    - Multicollinearity Handling: Creates new, uncorrelated variables to address issues when original features are highly correlated.
+    - Noise Reduction: Eliminates components with low variance enhance data clarity.
+    - Data Compression: Represents data with fewer components reduce storage needs and speeding up processing.
+    - Outlier Detection: Identifies unusual data points by showing which ones deviate significantly in the reduced space.
+
+**Disadvantages**
+
+    - Interpretation Challenges: The new components are combinations of original variables which can be hard to explain.
+    - Data Scaling Sensitivity: Requires proper scaling of data before application or results may be misleading.
+    - Information Loss: Reducing dimensions may lose some important information if too few components are kept.
+    - Assumption of Linearity: Works best when relationships between variables are linear and may struggle with non-linear data.
+    - Computational Complexity: Can be slow and resource-intensive on very large datasets.
+    - Risk of Overfitting: Using too many components or working with a small dataset might lead to models that don't generalize well.
+
+2. Independent Component Analysis (ICA)
+----------------------------------------
+**Introduction**
+Independent Component Analysis (ICA) is a technique used to separate mixed signals into their independent, non-Gaussian components. Its aim to find a linear transformation of data that maximizes statistical independence among the components. ICA is widely used in fields like audio, image processing and biomedical signal analysis to isolate distinct sources from mixed signals.
+
+Assumptions in ICA
+
+ICA operates under two key assumptions:
+
+    - The source signals are statistically independent of each other.
+    - The source signals have non-Gaussian distributions.
+
+These assumptions allow ICA to effectively separate mixed signals into independent components, a task that traditional methods like PCA cannot achieve
+
+Cocktail Party Problem in ICA
+
+To better understand how Independent Component Analysis (ICA) works let’s look at a classic example known as the Cocktail Party Problem
+ICA_Problem
+Cocktail Party Problem in ICA
+
+Here there is a party going into a room full of people.
+
+There is 'n' number of speakers in that room and they are speaking simultaneously at the party. In the same room, there are also 'n' microphones placed at different distances from the speakers which are recording 'n' speakers' voice signals. 
+
+![Cocktail Part example for ICA](ica.webp)
+
+Hence the number of speakers is equal to the number of microphones in the room. Now using these microphones' recordings, we want to separate all the 'n' speakers voice signals in the room given that each microphone recorded the voice signals coming from each speaker of different intensity due to the difference in distances between them.
+
+Decomposing the mixed signal of each microphone's recording into an independent source's speech signal can be done by using the machine learning technique independent component analysis. 
+
+     [X1,X2,…,Xn]=>[Y1,Y2,…,Yn]
+
+where X1,X2,…,Xn​ are the original signals present in the mixed signal and Y1,Y2,…,Yn​ are the new features and are independent components that are independent of each other.
+
+**Applications**
+- Blind source separation (e.g., separating audio sources)
+- Feature extraction
+
+
+**Python Implementation**
+```python
+from sklearn.decomposition import FastICA
+ica = FastICA(n_components=2)
+X_independent = ica.fit_transform(X)
+```
+**Advantages**
+
+    - Separation of Mixed Signals: ICA is a go-to tool for separating mixed signals into their independent components. This is useful in a variety of applications such as signal processing, image analysis and data compression.
+    - Non-Parametric Approach: It is a non-parametric approach which means that it does not require assumptions about the underlying probability distribution of the data.
+    - Unsupervised Learning Technique: It is an unsupervised learning technique which means that it can be applied to data without the need for labeled examples. This makes it useful in situations where labeled data is not available.
+    - Useful for Feature Extraction: This can be used for feature extraction which means that it can identify important features in the data that can be used for other tasks, such as classification.
+
+**Disadvantages**
+
+    - Assumes Non-Gaussian Sources: It assumes that the underlying sources are non-Gaussian which may not always be true. If the underlying sources are Gaussian ICA may not be effective.
+    - Assumes Linear Mixing: ICA assumes that the sources are mixed linearly which may not always be the case. If the sources are mixed nonlinearly ICA may not be effective.
+    - Computationally Expensive: This can be computationally expensive especially for large datasets which make it difficult to apply ICA to real-world problems.
+
+3. t-Distributed Stochastic Neighbor Embedding (t-SNE)
+------------------------------------------------------
+**Introduction**
+T-distributed Stochastic Neighbor Embedding (t-SNE) is a non linear dimensionality reduction technique used for visualizing high-dimensional data in a lower-dimensional space mainly in 2D or 3D. Unlike linear methods such as Principal Component Analysis (PCA), t-SNE focus on preserving the local structure and pattern of the data. 
+t-SNE works by looking at the similarity between data points in the high-dimensional space. The similarity is computed as a conditional probability. It calculates how likely it is that one data point would be near another.
+
+**Algorithm**
+- Compute pairwise similarities in high-dimensional space.
+- Map points to lower-dimensional space preserving similarities.
+- Minimize Kullback-Leibler divergence.
+
+**Python Implementation**
+```python
+from sklearn.manifold import TSNE
+tsne = TSNE(n_components=2, random_state=42)
+X_embedded = tsne.fit_transform(X)
+```
+
+**Advantages**
+
+    - Great for Visualization: t-SNE is particularly used to convert complex high-dimensional data into 2D or 3D for visualization making patterns and clusters easy to observe.
+    - Preserve Local Structure: Unlike linear techniques like PCA t-SNE focus on maintaining the local relationships between data points meaning similar data points remain close in the lower-dimensional space.
+    - Non-Linear Capability: It captures non-linear dependencies in the data which makes it suitable for complex datasets where linear methods fail.
+    - Cluster Separation: Helps in clearly visualizing clusters and class separability in datasets like MNIST making it easier for interpretation and exploration.
+
+**Disadvantages**
+
+    - Computationally Intensive: t-SNE is slower and more computationally expensive compared to linear methods especially on large datasets.
+    - Non-deterministic Output: The output can vary with each run due to its randomness unless a fixed random_state is used.
+    - Not Scalable for Large Datasets: It struggles with very large datasets (e.g., millions of points) unless optimized or approximated versions are used.
+    - Not Good for Downstream Tasks: t-SNE is mainly for visualization and is not suitable for dimensionality reduction when feeding data into other ML algorithms.
+    - No Global Structure Preservation: It may distort global distances and structures in the data focusing more on preserving local neighborhoods.
+
+**Evaluation Metrics for Clustering**
+------------------------------------
+- Silhouette Score: 
+    The Silhouette Score is a way to measure how good the clusters are in a dataset. It helps us understand how well the data points have been grouped. The score ranges from -1 to 1.
+
+    - A score close to 1 means a point fits really well in its group (cluster) and is far from other groups.
+    - A score close to 0 means the point is on the border between two clusters.
+    - A score close to -1 means the point might be in the wrong cluster.
+
+    Silhouette Score (S) for a data point i is calculated as:
+    $$S(i) = \frac{b(i) - a(i)}{\max(a(i),\, b(i))}$$
+
+    where,
+    a(i) is the average distance from i to other data points in the same cluster.
+    b(i) is the smallest average distance from i to data points in a different cluster.
+
+- Davies-Bouldin Index
+
+    The Davies-Bouldin Index (DBI) helps us measure how good the clustering is in a dataset. It looks at how tight each cluster is (compactness), and how far apart the clusters are (separation).
+
+        - Lower DBI = better, clearer clusters
+        - Higher DBI = messy, overlapping clusters
+
+    A lower score is better, because it means:
+
+        - Points in the same cluster are close to each other.
+        - Different clusters are far apart from one another.
+
+    Davies-Bouldin Index (DB) is calculated as:
+$$DB = \frac{1}{k} \sum_{i=1}^{k} 
+\max_{j \ne i} \left( \frac{R_{ij}}{R_{ii} + R_{jj}} \right)$$
+
+where,
+
+    k is the total number of clusters.
+    $$R_{ii}$$ is the compactness of cluster i.
+    $$R_{ii}$$ is the compactness of cluster j.
+    $$R_{ii}R_{jj}$$​ is the dissimilarity (distance) between cluster i and cluster j.
+
+3. Calinski-Harabasz Index (Variance Ratio Criterion)
+
+    The Calinski-Harabasz Index measures how good the clusters are in a dataset.
+
+    It looks at:
+
+        How close the points are inside each cluster?
+        How far apart the clusters are?
+
+    A higher score is better, as it means the clusters are tight and well-separated. It helps determine the ideal number of clusters.
+
+    Calinski-Harabasz Index (CH) is calculated as:
+    $$CH = \frac{W_B}{N - K} \times (K - 1)$$
+
+where,
+
+    B is the sum of squares between clusters.
+    W is the sum of squares within clusters.
+    N is the total number of data points.
+    K is the number of clusters.
+
+    Calculating between group sum of squares (B):
+$$W = \sum_{k=1}^{n_k} \lVert X_{ik} - C_k \rVert^2$$
+where,
+
+    nk​ is the number of observation in cluster 'k'
+    Xik is the i-th observation of cluster 'k'
+    Ck​ is the centroid of cluster 'k'
+
+    Calculating within the group sum of squares (W)
+
+$$W = \sum_{k=1}^{K} \sum_{i=1}^{n_k} \lVert X_{ik} - C_k \rVert^2$$
+
+where,
+
+    nk​ is the number of observation in cluster 'k'
+    Xik is the i-th observation of cluster 'k'
+    Ck is the centroid of cluster 'k'
+
+4. Adjusted Rand Index (ARI)
+
+    The Adjusted Rand Index (ARI) helps us measure how accurate a clustering result is by comparing it to the true labels (ground truth).
+
+    It checks how well the pairs of points are grouped:
+
+        - Are the same pairs together in both the real and predicted clusters?
+        Are different pairs also kept apart correctly?
+
+    The score ranges from -1 to 1:
+
+        - 1 means perfect match - the clustering is exactly right.
+        - 0 means random guess - no better than chance.
+        - Below 0 means worse than random - very poor clustering.
+
+    Adjusted Rand Index (ARI) is calculated as:
+    $$ARI = \frac{RI - \text{ExpectedRI}}{\max(RI) - \text{ExpectedRI}}$$
+
+where,
+
+    RI is the Rand Index.
+    ExpectedRIExpectedRI​ is the expected value of the Rand Index.
+
+5. Mutual Information (MI)
+
+Mutual Information measures how much two variables are related or connected. In clustering, it compares how much the true cluster labels match with the predicted labels. It shows how much knowing about one variable helps us predict the other. The more agreement there is, the higher the score.
+
+    - Higher values mean better agreement between the clusters.
+    - Zero means no agreement at all.
+
+MI between true labels Y and predicted labels Z is calculated as:
+$$MI(y, z) = \sum_i \sum_j p(y_i, z_j)\,\log\!\left( \frac{p(y_i)\,p(z_j)}{p(y_i, z_j)} \right)
+$$
+
+where,
+
+    yi​ is a true label.
+    zi​ is a predicted label.
+    p(yi,zi) is the joint probability of yi​ and zj​.
+    p(yi) and p(zi) are the marginal probabilities.
+
+These clustering metrics help in evaluating the quality and performance of clustering algorithms, allowing for informed decisions when selecting the most suitable clustering solution for a given dataset.
+
+**Python Implementation**
+```python
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score,  mutual_info_score, adjusted_rand_score
+
+model = KMeans(n_clusters=3)
+model.fit(X)
+
+silhouette = silhouette_score(X, model.labels_)
+db_index = davies_bouldin_score(X, model.labels_)
+ch_index = calinski_harabasz_score(X, model.labels_)
+ari = adjusted_rand_score(iris.target, model.labels_)
+mi = mutual_info_score(iris.target, model.labels_)
+```
+
+====================
+REINFORCEMENT LEARNING
+====================
+
+Overview of Reinforcement Learning (RL)
+-----------------------------------------
+Reinforcement Learning is a learning paradigm where an agent learns to make sequential decisions by interacting with an environment to maximize long-term cumulative reward.
+
+The agent does not receive labeled data.
+Instead, it receives rewards, which guide it toward good behavior.
+
+Key components:
+- Agent: Learner or decision maker
+- Environment: The world the agent interacts with
+- State (S): Current situation of the agent
+- Action (A): Choices available to the agent
+- Reward (R): Feedback signal
+- Policy (π): Strategy mapping states to actions
+- Value Function (V): Expected cumulative reward
+- Q-Function (Q): Expected reward for state-action pair
+
+![Reinforcement Learning](reinforcement_learning.jpg)
+
+1. RL as a Markov Decision Process (MDP)
+
+RL problems are modeled as a Markov Decision Process (MDP) defined by:
+- Tuple (S, A, P, R, γ)
+  - S: States
+  - A: Actions
+  - P: Transition probabilities P(s'|s,a)
+  - R: Reward function
+  - γ: Discount factor (0 <= γ <= 1)
+
+2. Return (Cumulative Discounted Reward)
+
+The return from time step t is:
+    $G_t = \sum_{k=0}^{\infty}\gamma^k R_{t+k+1}$
+
+This represents the total future reward, discounted by γ.
+
+3. Policy
+
+A policy defines the agent’s behavior:$\pi(a|s) = \Pr(A_t = a \mid S_t = s)$
+
+4. Value Functions (Core of RL)
+Focus on estimating “how good” a state or action is.
+
+    4.1 State-Value Function
+$V^\pi(s) = \mathbb{E}_\pi \left[ G_t \mid S_t = s \right]$
+
+    4.2 Action-Value Function (Q-function)
+    - Model-free algorithm to learn Q-function
+    - Update rule:
+
+$Q^\pi(s,a) = \mathbb{E}_\pi \left[ G_t \mid S_t = s, A_t = a \right]$
+
+5. Bellman Equations
+    5.1 Bellman Expectation Equation for $V^\pi$
+    $V^\pi(s) = \sum_{a}\pi(a|s)\sum_{s'}P(s'|s,a)\left[R(s,a) + \gamma V^\pi(s')\right]$
+
+    5.2 Bellman Expectation Equation for $Q^\pi$
+    $Q^\pi(s,a) = \sum_{s'}P(s'|s,a)\left[R(s,a) + \gamma \sum_{a'}\pi(a'|s')Q^\pi(s',a')\right]$
+
+6. Optimal Value Functions
+$$V^*(s) = \max_\pi V^\pi(s)
+Q^*(s,a) = \max_\pi Q^\pi(s,a)
+$$
+
+7. Bellman Optimality Equations
+7.1 For $V^*(s)$
+$V^*(s) = \max_{a}\sum_{s'}P(s'|s,a)\left[R(s,a) + \gamma V^*(s')\right]$
+
+7.2 For $Q^*(s,a)$
+$Q^*(s,a) = \sum_{s'}P(s'|s,a)\left[R(s,a) + \gamma \max_{a'}Q^*(s',a')\right]$
+
+8. Major RL Algorithms
+    8.1 Dynamic Programming (DP)
+
+    Requires full knowledge of transition probabilities.
+
+    Value Iteration
+    $V_{k+1}(s) = \max_a \sum_{s'}P(s'|s,a)\left[R(s,a)+\gamma V_k(s')\right]$
+
+    Policy Iteration
+        1.Policy evaluation
+        2.Policy improvement
+
+    8.2 Monte Carlo (MC)
+
+    Learns value functions from sampled episodes.
+
+    Update rule: $V(s) \leftarrow V(s) + \alpha \left[G_t - V(s)\right]$
+
+    8.3 Temporal Difference (TD) Learning
+
+    Combines DP + MC.
+
+    TD(0) Update Rule : $V(s) \leftarrow V(s) + \alpha \left[R + \gamma V(s') - V(s)\right]$
+
+    8.4 Q-Learning (Off-Policy):
+        A value-based, model-free, off-policy method.
+        Learns which action is best in each state.
+        Agent gradually improves its estimate of the best behavior.
+
+    One of the most important RL algorithms.
+    $Q(s,a) \leftarrow Q(s,a) + \alpha\left[R + \gamma \max_{a'}Q(s',a') - Q(s,a)\right]$
+
+    8.5 SARSA (On-Policy):
+        Similar to Q-learning but on-policy.
+        Learns values based on the actions it actually takes.
+
+    $Q(s,a) \leftarrow Q(s,a) + \alpha\left[R + \gamma Q(s',a') - Q(s,a)\right]$
+
+9. Exploration vs Exploitation
+
+Exploration : Trying different actions to discover new possibilities.
+
+Exploitation : Choosing the best-known action to get maximum reward.
+
+RL requires a balance of both:
+
+    Too much exploration → slow progress
+    Too much exploitation → agent may miss better strategies
+
+    - ε-greedy strategy: choose random action with probability ε, otherwise best action
+    - Softmax or Boltzmann exploration
+
+ϵ-Greedy Policy : 
+$\pi(a|s) =
+\begin{cases}
+1 - \epsilon + \frac{\epsilon}{|\mathcal{A}|}, & \text{if } a = \arg\max_{a'}Q(s,a') \\
+\frac{\epsilon}{|\mathcal{A}|}, & \text{otherwise}
+\end{cases}
+$
+
+10. Policy Gradient Methods
+
+Instead of learning value functions and deriving a policy, policy gradient methods directly optimize the policy.
+
+Objective: $J(\theta) = \mathbb{E}_\pi\left[ G_t\right]$
+
+Policy Gradient Theorem : 
+$\nabla_\theta J(\theta)
+= \mathbb{E}_\pi \left[ G_t \nabla_\theta \log \pi_\theta(a|s) \right]$
+
+This leads to REINFORCE algorithm.
+
+11. Actor–Critic Methods
+    Combines value-based and policy-based approaches
+
+Combine:
+    Actor → updates policy
+    Critic → evaluates action via value function
+
+Update: $\theta \leftarrow \theta + \alpha\, \delta \nabla_\theta \log \pi_\theta(a|s$
+Where TD error: $\delta = R + \gamma V(s') - V(s)$
+
+12. Model-Free vs Model-Based RL
+    Model-Free RL
+        Learns only from experience.
+        Does not try to understand how the environment works.
+
+    Examples:
+        Q-learning
+        DQN
+        PPO
+        A3C
+
+    Model-Based RL
+        Learns a model of the environment and uses planning.
+
+    Examples:
+        AlphaZero-style methods
+
+**Python Implementation (simplified)**
+```python
+import numpy as np
+Q = np.zeros((num_states, num_actions))
+for episode in range(num_episodes):
+    state = env.reset()
+    done = False
+    while not done:
+        action = choose_action(Q, state)
+        next_state, reward, done = env.step(action)
+        Q[state, action] += alpha * (reward + gamma * np.max(Q[next_state]) - Q[state, action])
+        state = next_state
+```
+
+**Applications**
+----------------
+- Robotics: Path planning, manipulation
+- Game AI: Chess, Go, video games
+- Recommendation systems
+- Autonomous driving
+
+*Advantages of RL*
+    Learns sequential decision-making
+    Works with delayed rewards
+    Can outperform humans on difficult tasks
+    Handles continuous control
+    Works without labeled datasets
+
+10. Limitations of RL
+    Requires large training time
+    Highly sensitive to hyperparameters
+    Exploration can be difficult
+    Not guaranteed to converge
+    Environments must be well simulated
+
+====================
+END OF REINFORCEMENT LEARNING SECTION
+====================
+
